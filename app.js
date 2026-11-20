@@ -94,7 +94,7 @@ function flipTea(button,type,index){
     $('tea-score').textContent=teaPairs+' / 3 PAIRS · '+teaTurns+(teaTurns===1?' TURN':' TURNS');$('quest-status').textContent='PAIRS: '+teaPairs+' / 3';
     if(teaPairs===3){
       stage='tea-complete';
-      story('MOCHI','QUEST 2 COMPLETE · ALL DRINKS MATCHED','You have excellent taste, pookie.','Three perfect pairs. The hamsters have packed your drinks — and a secret letter is waiting at the cottage.',[['CONTINUE TO THE COTTAGE',letter]]);focusStory();
+      story('MOCHI','QUEST 2 COMPLETE · ALL DRINKS MATCHED','You have excellent taste, pookie.','Three perfect pairs. We could be a perfect pair. The hamsters have packed your drinks and a secret letter is waiting at the cottage',[['CONTINUE TO THE COTTAGE',letter]]);focusStory();
     }else story('MOCHI','QUEST 2 · '+teaPairs+' / 3 PAIRS','A perfect little pair!','That’s the '+teaDrinks[type].name.toLowerCase()+' sorted. Keep going — there are more drinks to match.');
   }else{
     teaBusy=true;$('tea-score').textContent=teaPairs+' / 3 PAIRS · '+teaTurns+(teaTurns===1?' TURN':' TURNS');
