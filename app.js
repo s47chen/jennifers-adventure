@@ -4,6 +4,9 @@ const rainHamster=new Image();rainHamster.src='hamster-rain.png';
 const happyHamster=new Image();happyHamster.src='hamster-happy.png';
 ['hamster-no-crying.png','hamster-no-unimpressed.png','hamster-no-thumbsdown.png'].forEach(src=>{const image=new Image();image.src=src;});
 let found=new Set(),stage='intro',cleanupRunaway=()=>{};
+const teaDrinks=[{name:'Pink fruit tea',src:'heytea-pink.png'},{name:'Grape tea',src:'heytea-grape.png'},{name:'Citrus tea',src:'heytea-citrus.png'}];
+teaDrinks.forEach(drink=>{const image=new Image();image.src=drink.src;});
+let teaFirst=null,teaBusy=false,teaPairs=0,teaTurns=0,teaTimer=null;
 const names=['PIP','MOCHI','BEAN'];
 const hints=['I put a bucket of Jollibee chicken right beside my tree. Very sneaky. Very hidden. Okay, you can probably smell it.','Mine is floating over the path! Collect it before I try to eat it.','There’s one near the little house. No, I will not explain the eyebrows.'];
 const messages=['For all the little ways you make an ordinary day feel special.','For the way being around you makes everything a little brighter.','For the courage to tell you something I’ve been meaning to say.'];
@@ -11,9 +14,9 @@ function story(speaker,chapter,title,copy,buttons=[]){cleanupRunaway();cleanupRu
 function focusStory(){$('story-title').focus({preventScroll:true});$('story-title').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'nearest'});}
 function start(){stage='chicken';$('scene').classList.add('playing');$('quest-status').textContent='CHICKEN: 0 / 3';$('scene-caption').textContent='TAP THE THREE CHICKEN BUCKETS';story('PIP','QUEST 1 · THE CHICKEN HUNT','A little help for our very secret plan?','We hid three buckets of Jollibee chicken around the valley. Find them all! You can tap us for a hint.');}
 $('begin').onclick=start;
-document.querySelectorAll('[data-chicken]').forEach(b=>b.onclick=()=>{if(stage!=='chicken')return;const n=Number(b.dataset.chicken);if(found.has(n))return;found.add(n);b.classList.add('collected');const slot=document.querySelectorAll('.slot')[n];slot.classList.add('full');slot.setAttribute('aria-label','Collected Jollibee chicken bucket');$('quest-status').textContent='CHICKEN: '+found.size+' / 3';if(found.size===3){stage='path';$('scene-caption').textContent='THE HAMSTERS SEEM VERY PLEASED WITH THEMSELVES.';story(names[n],'QUEST 1 COMPLETE · 3 / 3 BUCKETS','Excellent. The plan is working.','Three buckets of chicken, all collected. There’s something waiting for you at the cottage.',[['FOLLOW THE PATH',letter]]);}else story(names[n],'QUEST 1 · '+found.size+' / 3 BUCKETS','A little Chickenjoy, just for you.',messages[n]);});
-document.querySelectorAll('[data-hamster]').forEach(b=>b.onclick=()=>{const n=Number(b.dataset.hamster);if(stage==='intro'){story(names[n],'THE HAMSTER WELCOMING COMMITTEE',['Jennifer! We’ve been expecting you.','Do we look like we’re plotting something?','The eyebrows? Completely normal.'][n],['I’m Pip, your very trustworthy guide. Ready for a tiny adventure?','I’m Mochi. I’m in charge of secrets. And snacks. Mostly snacks.','I’m Bean. I have one job: make sure you get to the end of this adventure.'][n],[['START ADVENTURE',start]]);}else if(stage==='chicken'){story(names[n],'HAMSTER HINT',found.has(n)?'You found my chicken!':'A totally subtle hint…',found.has(n)?'Keep looking for the other chicken buckets. My friends know where they are.':hints[n]);}else if(stage==='path'){letter();}else if(stage==='letter'){story(names[n],'QUEST 2 · THE SECRET LETTER','That letter has your name on it.','Tap the envelope by the cottage, or open it here. We’ll give you a little privacy.',[['OPEN THE LETTER',question]]);}});
-function letter(){stage='letter';$('location').textContent='THE SECRET COTTAGE';$('quest-status').textContent='LETTER UNLOCKED';$('letter').classList.remove('hidden');$('scene-caption').textContent='A LETTER! WITH YOUR NAME ON IT!';story('BEAN','QUEST 2 · THE SECRET LETTER','Delivery for one very special human.','Jennifer, we’ve been guarding this letter all day. Someone has a little something to ask you.',[['OPEN THE LETTER',question]]);focusStory();}
+document.querySelectorAll('[data-chicken]').forEach(b=>b.onclick=()=>{if(stage!=='chicken')return;const n=Number(b.dataset.chicken);if(found.has(n))return;found.add(n);b.classList.add('collected');const slot=document.querySelectorAll('.slot')[n];slot.classList.add('full');slot.setAttribute('aria-label','Collected Jollibee chicken bucket');$('quest-status').textContent='CHICKEN: '+found.size+' / 3';if(found.size===3){stage='path';$('scene-caption').textContent='THE HAMSTERS SEEM VERY PLEASED WITH THEMSELVES.';story(names[n],'QUEST 1 COMPLETE · 3 / 3 BUCKETS','Excellent. The plan is working.','Three buckets of chicken, all collected. Our chicken needs a drink. There’s a tiny tea shop along the path!',[['VISIT THE TEA SHOP',startTea]]);}else story(names[n],'QUEST 1 · '+found.size+' / 3 BUCKETS','A little Chickenjoy, just for you.',messages[n]);});
+document.querySelectorAll('[data-hamster]').forEach(b=>b.onclick=()=>{const n=Number(b.dataset.hamster);if(stage==='intro'){story(names[n],'THE HAMSTER WELCOMING COMMITTEE',['Jennifer! We’ve been expecting you.','Do we look like we’re plotting something?','The eyebrows? Completely normal.'][n],['I’m Pip, your very trustworthy guide. Ready for a tiny adventure?','I’m Mochi. I’m in charge of secrets. And snacks. Mostly snacks.','I’m Bean. I have one job: make sure you get to the end of this adventure.'][n],[['START ADVENTURE',start]]);}else if(stage==='chicken'){story(names[n],'HAMSTER HINT',found.has(n)?'You found my chicken!':'A totally subtle hint…',found.has(n)?'Keep looking for the other chicken buckets. My friends know where they are.':hints[n]);}else if(stage==='path'){startTea();}else if(stage==='letter'){story(names[n],'QUEST 3 · THE SECRET LETTER','That letter has your name on it.','Tap the envelope by the cottage, or open it here. We’ll give you a little privacy.',[['OPEN THE LETTER',question]]);}});
+function letter(){clearTimeout(teaTimer);$('tea-game').classList.add('hidden');$('scene').classList.remove('tea-active');stage='letter';$('location').textContent='THE SECRET COTTAGE';$('quest-status').textContent='LETTER UNLOCKED';$('letter').classList.remove('hidden');$('scene-caption').textContent='A LETTER! WITH YOUR NAME ON IT!';story('BEAN','QUEST 3 · THE SECRET LETTER','Delivery for one very special human.','Jennifer, we’ve been guarding this letter all day. Someone has a little something to ask you.',[['OPEN THE LETTER',question]]);focusStory();}
 $('letter').onclick=question;
 function question(){stage='question';$('scene').classList.add('final');$('letter').classList.add('hidden');$('location').textContent='A BRAND NEW CHAPTER';$('quest-status').textContent='ONE BIG QUESTION';$('scene-caption').textContent='THE HAMSTERS ARE HOLDING THEIR BREATH.';$('subtitle').textContent='The hamsters helped. But this part is from my heart.';story('FOR YOU','THE FINAL QUEST · FOLLOW YOUR HEART','Jennifer, will you be my girlfriend?','I’d love more little moments, more laughs, and more adventures with you. What do you say?',[['YES! LET’S DO THIS ♥',yes],['I need a little time',()=>{answer('Take all the time you need.','No rush, and no pressure. I’m happy I got to tell you how I feel.');showNoExpressions();},true],['No, thank you',no,true]]);makeNoRunAway();focusStory();}
 function answer(title,copy){stage='end';$('quest-status').textContent='ADVENTURE COMPLETE';$('scene-caption').textContent='THANK YOU FOR PLAYING, JENNIFER.';story('PIP','THANK YOU FOR BEING YOU',title,copy,[['PLAY AGAIN',()=>location.reload(),true]]);focusStory();}
@@ -58,4 +61,46 @@ function makeNoRunAway(){
   window.addEventListener('resize',reset,{signal:controller.signal});
   window.visualViewport?.addEventListener('resize',reset,{signal:controller.signal});
   cleanupRunaway=()=>{controller.abort();reset();};
+}
+
+function startTea(){
+  if(stage!=='path')return;
+  stage='tea';teaFirst=null;teaBusy=false;teaPairs=0;teaTurns=0;
+  $('location').textContent='THE HEYTEA TEA SHOP';$('quest-status').textContent='PAIRS: 0 / 3';
+  $('tea-game').classList.remove('hidden');$('scene').classList.add('tea-active');$('tea-score').textContent='0 / 3 PAIRS · 0 TURNS';
+  const deck=[0,0,1,1,2,2];
+  for(let i=deck.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[deck[i],deck[j]]=[deck[j],deck[i]];}
+  $('tea-cards').replaceChildren();
+  deck.forEach((type,index)=>{
+    const button=document.createElement('button');button.className='tea-card';button.type='button';
+    button.setAttribute('aria-label','Reveal drink card '+(index+1));
+    const back=document.createElement('span');back.className='tea-back';back.textContent='?';back.setAttribute('aria-hidden','true');
+    const front=document.createElement('span');front.className='tea-front';front.setAttribute('aria-hidden','true');
+    const img=document.createElement('img');img.src=teaDrinks[type].src;img.alt='';
+    const label=document.createElement('span');label.textContent=teaDrinks[type].name;
+    front.append(img,label);button.append(back,front);button.onclick=()=>flipTea(button,type,index);$('tea-cards').append(button);
+  });
+  story('MOCHI','QUEST 2 · THE HEYTEA MATCH-UP','Chickenjoy meets its perfect match.','Flip two cards at a time and find all three matching drink pairs. No timer, just tea.');
+  $('tea-cards').querySelector('button').focus({preventScroll:true});$('tea-game').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function flipTea(button,type,index){
+  if(stage!=='tea'||teaBusy||button.disabled||button.classList.contains('flipped'))return;
+  button.classList.add('flipped');button.setAttribute('aria-label',teaDrinks[type].name+', card '+(index+1));
+  if(!teaFirst){teaFirst={button,type,index};return;}
+  teaTurns++;
+  const first=teaFirst;teaFirst=null;
+  if(first.type===type){
+    teaPairs++;[first.button,button].forEach(card=>{card.classList.add('matched');card.disabled=true;});
+    $('tea-score').textContent=teaPairs+' / 3 PAIRS · '+teaTurns+(teaTurns===1?' TURN':' TURNS');$('quest-status').textContent='PAIRS: '+teaPairs+' / 3';
+    if(teaPairs===3){
+      stage='tea-complete';
+      story('MOCHI','QUEST 2 COMPLETE · ALL DRINKS MATCHED','You have excellent taste, pookie.','Three perfect pairs. The hamsters have packed your drinks — and a secret letter is waiting at the cottage.',[['CONTINUE TO THE COTTAGE',letter]]);focusStory();
+    }else story('MOCHI','QUEST 2 · '+teaPairs+' / 3 PAIRS','A perfect little pair!','That’s the '+teaDrinks[type].name.toLowerCase()+' sorted. Keep going — there are more drinks to match.');
+  }else{
+    teaBusy=true;$('tea-score').textContent=teaPairs+' / 3 PAIRS · '+teaTurns+(teaTurns===1?' TURN':' TURNS');
+    story('MOCHI','QUEST 2 · THE HEYTEA MATCH-UP','Almost! Different drinks.','Remember where these two are. They’ll flip back in a moment.');
+    teaTimer=setTimeout(()=>{
+      [first.button,button].forEach((card,i)=>{card.classList.remove('flipped');card.setAttribute('aria-label','Reveal drink card '+((i===0?first.index:index)+1));});teaBusy=false;
+    },1100);
+  }
 }
