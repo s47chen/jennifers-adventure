@@ -4,7 +4,7 @@ const rainHamster=new Image();rainHamster.src='hamster-rain.png';
 const happyHamster=new Image();happyHamster.src='hamster-happy.png';
 ['hamster-no-crying.png','hamster-no-unimpressed.png','hamster-no-thumbsdown.png'].forEach(src=>{const image=new Image();image.src=src;});
 let found=new Set(),stage='intro',cleanupRunaway=()=>{};
-const teaDrinks=[{name:'Pink fruit tea',src:'heytea-pink.png'},{name:'Grape tea',src:'heytea-grape.png'},{name:'Citrus tea',src:'heytea-citrus.png'}];
+const teaDrinks=[{name:'Guava Green Grape Slush',src:'heytea-pink.png'},{name:'Cloud Grape Boom',src:'heytea-grape.png'},{name:'Golden Oolong Yuzu',src:'heytea-citrus.png'}];
 teaDrinks.forEach(drink=>{const image=new Image();image.src=drink.src;});
 let teaFirst=null,teaBusy=false,teaPairs=0,teaTurns=0,teaTimer=null;
 const names=['PIP','MOCHI','BEAN'];
