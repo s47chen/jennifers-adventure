@@ -5,3 +5,5 @@
 
 /* Chicken collectibles: Pip’s bucket sits beside the left tree trunk. */
 .collectible{width:66px;height:66px;padding:5px;filter:drop-shadow(2px 3px 0 #654c6355);font-size:0}.collectible img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated}.star-one{left:3%;top:auto;bottom:73px}.slot img{width:27px;height:27px;object-fit:contain;image-rendering:pixelated;filter:grayscale(1);opacity:.22}.slot.full img{filter:none;opacity:1}@media(max-width:650px){.collectible{width:54px;height:54px}.star-one{left:0;top:auto;bottom:71px}.slot img{width:22px;height:22px}}
+
+.runaway-no{position:fixed!important;z-index:20;transition:none!important;transform:none!important;touch-action:none}
